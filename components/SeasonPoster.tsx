@@ -1,10 +1,10 @@
 'use client';
 
 import type { Product, SeasonalCollection } from '@/lib/types';
-import { availability, dayOfYear, daysUntil, formatMonthDay, monthDayOf, monthName } from '@/lib/season';
-import { money } from '@/lib/format';
+import { availability, dayOfYear, daysUntil, formatMonthDay, monthDayOf, monthName, themeOf } from '@/lib/season';
+import { money, themeStyle } from '@/lib/format';
 import { useStore } from './store';
-import { BuyControls, ProductCard } from './ProductCard';
+import { BuyControls, ProductCard, ProductImage } from './ProductCard';
 import { NotifyForm } from './NotifyForm';
 
 const monthOfDoy = (doy: number) => new Date(Date.UTC(2001, 0, 1 + doy)).getUTCMonth() + 1;
@@ -86,50 +86,40 @@ function PosterCopy({ c, children }: { c: SeasonalCollection; children?: React.R
   );
 }
 
-function OffSeason() {
+/** The teaser before a season opens, painted in that season's colours */
+function SoonPoster() {
   const { shop, s, go } = useStore();
-  const seasonal = shop.collections.filter((c): c is SeasonalCollection => c.kind === 'seasonal' && c.status !== 'off');
-  const lastClosed = seasonal
-    .map((c) => ({ c, since: 365 - daysUntil(s.day, c.to) }))
-    .sort((a, b) => a.since - b.since)[0]?.c;
-  const upcoming = seasonal
-    .map((c) => ({ c, days: daysUntil(s.day, c.from) }))
-    .sort((a, b) => a.days - b.days);
-  const next = s.next;
+  if (!s.announced) return null;
+  const { collection: c, days } = s.announced;
+  const opens = formatMonthDay(c.from);
+  const peek = shop.products.filter((p) => p.collection === c.id).slice(0, 3);
 
   return (
     <>
       <div className="poster-copy">
-        <p className="eyebrow">{s.season.name}, {s.season.en} · Between seasons</p>
-        <h2 className="poster-title" id="poster-title">
-          {next ? `${next.collection.title} open on ${formatMonthDay(next.collection.from)}.` : 'The chocolate shelf is open all year.'}
-        </h2>
-        <p className="poster-body">
-          {lastClosed?.closedNote} {next ? 'Leave your number and we’ll text you the morning the next season opens.' : ''}
-        </p>
-        {next && <NotifyForm opensOn={formatMonthDay(next.collection.from)} what={next.collection.title} />}
+        <p className="eyebrow">Coming soon · {c.title}</p>
+        <h2 className="poster-title" id="poster-title">{c.teaser.title}</h2>
+        <p className="poster-body">{c.teaser.body}</p>
+        <NotifyForm opensOn={opens} what={c.title} />
         <div className="poster-actions">
           <button type="button" className="poster-link" onClick={() => go('premium')}>Meanwhile, the chocolate shelf is full</button>
         </div>
       </div>
       <div className="upcoming">
-        <h3>Coming up</h3>
-        <ul>
-          {upcoming.map(({ c, days }) => {
-            const theme = shop.seasons.find((x) => x.id === c.theme)?.theme;
-            return (
-              <li key={c.id}>
-                <span className="up-swatch" style={{ '--c': theme?.accent } as React.CSSProperties} />
-                <span className="up-name">
-                  <b>{c.title}</b>
-                  <span>{formatMonthDay(c.from)} – {formatMonthDay(c.to)}</span>
-                </span>
-                <span className="up-days">{days}<small>days</small></span>
-              </li>
-            );
-          })}
+        <p className="up-count">
+          <span className="up-days">{days}</span>
+          <span className="up-count-label">{days === 1 ? 'day' : 'days'} to go<br />{opens} – {formatMonthDay(c.to)}</span>
+        </p>
+        <ul className="peek" aria-label={`Coming in ${c.title}`}>
+          {peek.map((p) => (
+            <li key={p.id}>
+              <span className={`peek-img${p.fit === 'cover' ? ' is-cover' : ''}`}>
+                <ProductImage p={p} sizes="96px" className="peek-img-inner" />
+              </span>
+              <span className="peek-name">{p.name}</span>
+            </li>
+          ))}
         </ul>
-        <p className="up-note"><span lang="bn">{s.season.bn}</span> · {s.season.note}</p>
       </div>
     </>
   );
@@ -137,13 +127,14 @@ function OffSeason() {
 
 export function SeasonPoster() {
   const { shop, s } = useStore();
+  if (s.mode === 'none') return null;
   const c = s.primary;
   const items = c ? shop.products.filter((p) => p.collection === c.id) : [];
   const days = c?.countdownTo ? daysUntil(s.day, c.countdownTo) : 0;
 
   let body: React.ReactNode;
   if (!c) {
-    body = <OffSeason />;
+    body = <SoonPoster />;
   } else if (c.poster.layout === 'harvest') {
     body = (
       <>
@@ -178,9 +169,15 @@ export function SeasonPoster() {
     );
   }
 
+  const teased = !c && s.announced ? s.announced.collection : null;
   return (
-    <section className={`poster poster-${c ? c.poster.layout : 'off'}`} id="season" aria-labelledby="poster-title">
-      <p className="poster-word" aria-hidden="true" lang="bn">{c ? c.bn : s.season.bn}</p>
+    <section
+      className={`poster poster-${c ? c.poster.layout : 'soon'}`}
+      id="season"
+      aria-labelledby="poster-title"
+      style={teased ? themeStyle(themeOf(shop, teased)) : undefined}
+    >
+      <p className="poster-word" aria-hidden="true" lang="bn">{(c ?? teased)?.bn}</p>
       <div className="poster-inner">{body}</div>
     </section>
   );

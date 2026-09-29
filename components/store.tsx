@@ -46,7 +46,8 @@ export function StoreProvider({ shop, initialDay, initialPreview, children }: {
   const [productId, setProductId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const s = useMemo(() => resolveSeason(shop, day), [shop, day]);
+  const seasonalOff = !!findPreview(preview).seasonalOff;
+  const s = useMemo(() => resolveSeason(shop, day, { seasonalOff }), [shop, day, seasonalOff]);
   const product = useMemo(() => shop.products.find((p) => p.id === productId) ?? null, [shop, productId]);
 
   const setPreview = useCallback((id: PreviewId, origin?: { x: number; y: number }) => {

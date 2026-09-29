@@ -28,6 +28,8 @@ export interface Season {
 export interface Brand {
   name: string;
   nameBn: string;
+  /** The letter in the logo, also molded into every square of the hero bar */
+  mark: string;
   tagline: string;
   currency: string;
   phone: string;
@@ -69,6 +71,8 @@ export interface SeasonalCollection {
   status: 'auto' | 'on' | 'off';
   from: MonthDay;
   to: MonthDay;
+  /** Days before `from` to start a "coming soon" teaser. 0 = no teaser: chocolate only until it opens. */
+  announceDays: number;
   theme: string; // season id whose colours this collection uses
   title: string;
   short: string;
@@ -77,11 +81,12 @@ export interface SeasonalCollection {
   countdownTo?: MonthDay;
   /** Top bar text while live (harvest collections list what's ripe instead) */
   announce?: string;
-  hero: { now: string; next: string };
+  /** Top bar text during the teaser */
+  soonAnnounce: string;
   sub: { now: string; next: string };
   cta: { now: string; next: string };
   poster: { layout: PosterLayout; eyebrow: string; title: string; body: string; cta: string };
-  closedNote: string;
+  teaser: { title: string; body: string };
 }
 
 export type Collection = CoreCollection | SeasonalCollection;
@@ -123,10 +128,20 @@ export interface Product {
 export interface FaqItem {
   q: string;
   a: string;
+  /** Only shown while seasonal collections are running */
+  seasonal?: boolean;
+}
+
+export interface Settings {
+  /** Master switch. Off = a chocolate-only site, whatever the date. */
+  seasonalEnabled: boolean;
 }
 
 export interface ShopData {
   brand: Brand;
+  settings: Settings;
+  /** Colours when nothing seasonal is on: chocolate, cream and pistachio */
+  brandTheme: Theme;
   delivery: Delivery;
   payments: Payment[];
   seasons: Season[];

@@ -74,32 +74,66 @@ export function isLive(c: SeasonalCollection, day: IsoDay): boolean {
   return inWindow(day, c.from, c.to);
 }
 
+/**
+ * - live: a seasonal collection is on sale
+ * - soon: nothing on sale yet, but one opens within its teaser window
+ * - none: chocolate only, nothing seasonal anywhere on the page
+ */
+export type SeasonMode = 'live' | 'soon' | 'none';
+
+export interface Upcoming {
+  collection: SeasonalCollection;
+  days: number;
+}
+
 export interface SeasonState {
   day: IsoDay;
+  mode: SeasonMode;
   /** The Bengali season on this date */
   season: Season;
   /** Seasonal collections that are live right now (admin override or inside their window) */
   live: SeasonalCollection[];
   /** The live collection that leads the page, if any */
   primary: SeasonalCollection | null;
-  /** The next collection to open, when nothing is live */
-  next: { collection: SeasonalCollection; days: number } | null;
-  /** Colours in use: the live collection's, otherwise the Bengali season's */
+  /** The collection being teased, in "soon" mode */
+  announced: Upcoming | null;
+  /** Every scheduled collection that isn't live, soonest first (for the year wheel) */
+  upcoming: Upcoming[];
+  /** Colours in use: the live collection's, otherwise the brand's */
   theme: Theme;
-  themeSeason: Season;
+  /** Id of the palette in use ("brand" or a season id) */
+  themeId: string;
 }
 
-export function resolveSeason(shop: ShopData, day: IsoDay): SeasonState {
-  const seasonal = shop.collections.filter((c): c is SeasonalCollection => c.kind === 'seasonal');
+export function themeOf(shop: ShopData, c: SeasonalCollection): Theme {
+  return shop.seasons.find((s) => s.id === c.theme)?.theme ?? shop.brandTheme;
+}
+
+export function resolveSeason(shop: ShopData, day: IsoDay, opts: { seasonalOff?: boolean } = {}): SeasonState {
+  const enabled = shop.settings.seasonalEnabled && !opts.seasonalOff;
+  const seasonal = enabled
+    ? shop.collections.filter((c): c is SeasonalCollection => c.kind === 'seasonal' && c.status !== 'off')
+    : [];
   const live = seasonal.filter((c) => isLive(c, day));
   const primary = live[0] ?? null;
   const upcoming = seasonal
-    .filter((c) => c.status !== 'off' && !live.includes(c))
+    .filter((c) => !live.includes(c))
     .map((collection) => ({ collection, days: daysUntil(day, collection.from) }))
     .sort((a, b) => a.days - b.days);
-  const season = seasonOn(shop.seasons, day);
-  const themeSeason = (primary && shop.seasons.find((s) => s.id === primary.theme)) || season;
-  return { day, season, live, primary, next: upcoming[0] ?? null, theme: themeSeason.theme, themeSeason };
+  const first = upcoming[0];
+  const announced = !primary && first && first.days <= first.collection.announceDays ? first : null;
+  const mode: SeasonMode = primary ? 'live' : announced ? 'soon' : 'none';
+  return {
+    day,
+    mode,
+    season: seasonOn(shop.seasons, day),
+    live,
+    primary,
+    announced,
+    upcoming,
+    theme: primary ? themeOf(shop, primary) : shop.brandTheme,
+    themeId: primary ? primary.theme : 'brand',
+  };
 }
 
 export type Availability = 'in' | 'last' | 'soon' | 'over';

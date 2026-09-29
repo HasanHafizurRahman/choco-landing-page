@@ -1,12 +1,14 @@
-# ritu — storefront prototype
+# moyra (ময়রা): storefront prototype
 
 A landing page and shop in one, built with Next.js (App Router), React and TypeScript.
-Chocolate is always on sale; seasonal collections (mangoes in summer, gift boxes in February, anything
-you add later) switch on and off by date or from the admin panel, and the whole site re-themes itself
-with Bangladesh's six seasons.
+Chocolate is always on sale. Seasonal collections (mangoes in summer, gift boxes in February, anything
+you add later) switch on and off by date or from the admin panel. Outside a season the site is simply a
+chocolate shop; when a season arrives it takes over the page with its own colours.
 
-> **"ritu" (ঋতু, "season") is a placeholder brand name.** Change `brand.name` in `lib/data.ts` and it
-> updates everywhere, including the name molded into the chocolate bar in the hero.
+The brand lives in `brand` in `lib/data.ts`: the name (**moyra**, the Bengali word for a sweet-maker),
+the Bangla name, and the letter **ম** used in the logo. Change them there and they update everywhere,
+including the letter and name molded into the chocolate bar in the hero. The favicon (`app/icon.png`,
+`app/apple-icon.png`) is an image, so redraw it if the letter changes.
 
 ## Run it
 
@@ -17,29 +19,36 @@ npm run dev
 
 Open http://localhost:3000. For a production build: `npm run build` then `npm start`.
 
-### Preview different dates (prototype only)
+### Preview each state (prototype only)
 
-The **Preview dates** pill (bottom right) shows the site as it will look on:
+The **Preview** pill (bottom right) switches the site between its states:
 
 | Preview | URL | What you'll see |
 | --- | --- | --- |
+| No season | `/?preview=none` (default) | Chocolate only. No seasonal tab, poster, calendar or mango text anywhere. Pistachio brand colours |
+| 20 January | `/?preview=soon` | Coming soon: gift boxes open in 12 days. Teaser poster in the rose gift colours, reminder sign-up |
 | 12 June | `/?preview=mango` | Mango season live: harvest calendar, pre-booking, mango-gold theme |
 | 6 February | `/?preview=gifts` | Gift boxes live: countdown to the 14th, rose theme |
-| Today | `/?preview=today` | The real date. Between seasons: "next season" teaser and reminder sign-up |
 
 Delete `components/PreviewDock.tsx` and `lib/preview.ts` once the API decides what's live, and pass
 `todayInDhaka()` in `app/page.tsx`.
 
 ## How the seasons work
 
-- **Six Bengali seasons** (`seasons` in `lib/data.ts`) each have a colour theme. When nothing seasonal
-  is live, the site wears the colours of the current season (e.g. Shorot, autumn blue).
+The site is always in one of three states, worked out from the date and the data:
+
+| State | When | What changes |
+| --- | --- | --- |
+| **Chocolate only** | Nothing is live or about to open, or `settings.seasonalEnabled` is `false` | Only chocolate on the page, in the brand colours (`brandTheme`) |
+| **Coming soon** | A collection opens within its `announceDays` | Top bar, a teaser poster in that season's colours, a reminder sign-up and the year calendar. Still only chocolate for sale |
+| **Live** | A collection is on sale | The collection leads: top bar, hero button, Seasonal tab, poster, calendar and colours |
+
+- **`settings.seasonalEnabled`** is the master switch. Turn it off and the site is chocolate only, whatever the date.
 - **Collections** are either `core` (Premium chocolate, always on) or `seasonal`. A seasonal collection has
-  a date window (`from`/`to`, as `MM-DD`) and a `status`:
-  - `auto`: live inside its window (the default)
-  - `on` / `off`: admin override, ignoring dates
-- While a seasonal collection is live it leads the page: hero line, announcement bar, the **Seasonal**
-  tab, the big poster section and the theme colours all come from it.
+  a date window (`from`/`to`, as `MM-DD`), a `status` (`auto` follows the dates, `on`/`off` overrides them)
+  and `announceDays`: how many days before opening to start the teaser. Set it to `0` for no teaser.
+- **Always-on sections** wrap their seasonal bits (the mango delivery promise, the pre-booking question)
+  in `<IfSeasonal>`, so they disappear in the chocolate-only state.
 - Seasonal products can have their own window (each mango variety). Before it they show **Pre-book**,
   inside it **In season** (or **Last few days**), after it **Season over**.
 - The poster has three layouts, chosen per collection with `poster.layout`: `harvest` (timeline of
@@ -69,9 +78,14 @@ public/images/  product photos used by the site
 assets/         your original photo folders (untouched)
 ```
 
-The hero bar is drawn live with WebGL (`lib/chocolate-gl.ts`). It needs no image, is sharp on any
-screen, follows the cursor (or phone tilt), pauses when off screen, and falls back to a plain gradient
-if WebGL isn't available.
+### The hero
+
+The chocolate bar is drawn live with WebGL (`lib/chocolate-gl.ts`), so it needs no photo and is sharp on
+any screen. It floats between the two words, behind "Chocolate," and in front of "always.", and casts a
+soft shadow on the page. The light follows the cursor, or the tilt of a phone. One corner snaps off as
+the page loads; visitors can click or tap any square to snap it off, and a few seconds later the squares
+grow back. CSS decides where the bar sits: the renderer fits it into the `.hero-stage` box. It pauses when
+off screen, respects reduced-motion settings, and the words still show if WebGL isn't available.
 
 ## Photos
 

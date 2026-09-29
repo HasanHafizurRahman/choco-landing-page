@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useStore } from './store';
 import { useCart } from './cart';
-import { Icon } from './Icons';
+import { Icon, LogoMark } from './Icons';
 import { availability } from '@/lib/season';
 import { money } from '@/lib/format';
 
@@ -22,6 +22,8 @@ export function Announcement() {
     text = ripe.length ? `In season now: ${listNames(ripe)}.` : s.primary.sub.now;
   } else if (s.primary) {
     text = s.primary.announce ?? s.primary.sub.now;
+  } else if (s.announced) {
+    text = s.announced.collection.soonAnnounce;
   } else {
     text = `Free delivery inside Dhaka on orders over ${money(shop.delivery.freeOver, shop.brand.currency)}.`;
   }
@@ -32,9 +34,18 @@ export function Announcement() {
   );
 }
 
+/** Label for the seasonal link, or null when the site is chocolate only. */
+export function useSeasonalLabel() {
+  const { s } = useStore();
+  if (s.primary) return s.primary.short;
+  if (s.announced) return `${s.announced.collection.short} · soon`;
+  return null;
+}
+
 export function Header() {
-  const { shop, s, go, setMenuOpen } = useStore();
+  const { shop, go, setMenuOpen } = useStore();
   const { count, setOpen } = useCart();
+  const seasonal = useSeasonalLabel();
   const [solid, setSolid] = useState(false);
   const ref = useRef<HTMLElement>(null);
 
@@ -58,23 +69,24 @@ export function Header() {
     };
   }, []);
 
-  const seasonalLabel = s.primary ? s.primary.short : 'Seasonal';
-
   return (
     <header ref={ref} className={`site-header${solid ? ' is-solid' : ''}`}>
       <a className="logo" href="#top" aria-label={`${shop.brand.name}, back to top`}>
-        <Icon name="rosette" className="logo-mark" />
+        <LogoMark mark={shop.brand.mark} />
         <span className="logo-word">{shop.brand.name}</span>
         <span className="logo-bn" lang="bn">{shop.brand.nameBn}</span>
       </a>
       <nav className="nav" aria-label="Main">
         <a href="#shop" onClick={(e) => { e.preventDefault(); go('premium'); }}>Chocolate</a>
-        <a href="#shop" onClick={(e) => { e.preventDefault(); go('seasonal'); }}>
-          <span className="live-dot" aria-hidden="true" />
-          {seasonalLabel}
-        </a>
-        <a href="#year">The year</a>
+        {seasonal && (
+          <a href="#shop" onClick={(e) => { e.preventDefault(); go('seasonal'); }}>
+            <span className="live-dot" aria-hidden="true" />
+            {seasonal}
+          </a>
+        )}
+        {seasonal && <a href="#year">The year</a>}
         <a href="#delivery">Delivery</a>
+        {!seasonal && <a href="#faq">Questions</a>}
       </nav>
       <div className="header-actions">
         <button className="cart-btn" type="button" data-cart-target onClick={() => setOpen(true)}
@@ -91,7 +103,8 @@ export function Header() {
 }
 
 export function MobileMenu() {
-  const { shop, s, go, menuOpen, setMenuOpen } = useStore();
+  const { shop, go, menuOpen, setMenuOpen } = useStore();
+  const seasonal = useSeasonalLabel();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -111,7 +124,7 @@ export function MobileMenu() {
     <dialog ref={ref} className="menu" aria-label="Menu" onClose={() => setMenuOpen(false)}>
       <div className="menu-head">
         <span className="logo">
-          <Icon name="rosette" className="logo-mark" />
+          <LogoMark mark={shop.brand.mark} />
           <span className="logo-word">{shop.brand.name}</span>
         </span>
         <button className="icon-btn" type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)}>
@@ -120,8 +133,8 @@ export function MobileMenu() {
       </div>
       <nav className="menu-nav" aria-label="Mobile">
         <a href="#shop" onClick={(e) => { e.preventDefault(); go('premium'); }}>Chocolate</a>
-        <a href="#shop" onClick={(e) => { e.preventDefault(); go('seasonal'); }}>{s.primary ? s.primary.short : 'Seasonal'}</a>
-        <a href="#year" onClick={follow('#year')}>The year</a>
+        {seasonal && <a href="#shop" onClick={(e) => { e.preventDefault(); go('seasonal'); }}>{seasonal}</a>}
+        {seasonal && <a href="#year" onClick={follow('#year')}>The year</a>}
         <a href="#delivery" onClick={follow('#delivery')}>Delivery</a>
         <a href="#faq" onClick={follow('#faq')}>Questions</a>
       </nav>

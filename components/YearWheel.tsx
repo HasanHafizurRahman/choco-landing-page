@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { Season, SeasonalCollection } from '@/lib/types';
-import { formatDay, formatMonthDay, inWindow, monthDayOf, monthName, wheelAngle } from '@/lib/season';
+import { formatDay, formatMonthDay, inWindow, monthDayOf, monthName, themeOf, wheelAngle } from '@/lib/season';
 import { useStore } from './store';
 
 const C = 320;
@@ -41,9 +41,10 @@ function overlaps(season: Season, c: SeasonalCollection) {
 export function YearWheel() {
   const { shop, s } = useStore();
   const [focus, setFocus] = useState<string | null>(null);
+  if (s.mode === 'none') return null; // chocolate-only site: no seasonal calendar
   const focused = shop.seasons.find((x) => x.id === focus) ?? null;
   const shown = focused ?? s.season;
-  const seasonal = shop.collections.filter((c): c is SeasonalCollection => c.kind === 'seasonal' && c.status !== 'off');
+  const seasonal: SeasonalCollection[] = [...s.live, ...s.upcoming.map((u) => u.collection)];
   const today = wheelAngle(monthDayOf(s.day));
   const [tx0, ty0] = polar(150, today);
   const [tx1, ty1] = polar(284, today);
@@ -59,8 +60,7 @@ export function YearWheel() {
     let lane = lanes.findIndex((l) => l.every((o) => sp.a1 <= o.a0 || sp.a0 >= o.a1));
     if (lane === -1) { lanes.push([]); lane = lanes.length - 1; }
     lanes[lane].push(sp);
-    const theme = shop.seasons.find((x) => x.id === c.theme)?.theme;
-    return { c, sp, lane, color: theme?.accent ?? '#fff' };
+    return { c, sp, lane, color: themeOf(shop, c).accent };
   });
 
   return (

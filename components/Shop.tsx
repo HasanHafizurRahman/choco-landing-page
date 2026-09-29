@@ -39,20 +39,19 @@ function ShopPanel({ items, chips, match }: { items: Product[]; chips: Chip[]; m
   );
 }
 
-function NextPanel() {
+/** Seasonal tab while a collection is being teased */
+function SoonPanel() {
   const { s, go } = useStore();
-  const next = s.next;
-  if (!next) {
-    return <p className="empty-note">No seasonal collection is scheduled right now. The chocolate shelf is always open.</p>;
-  }
+  const next = s.announced;
+  if (!next) return null;
   const c = next.collection;
   const opens = formatMonthDay(c.from);
   return (
     <div className="next-panel">
       <div>
-        <p className="eyebrow eyebrow-on-dark">Between seasons</p>
-        <h3>{c.title} open on {opens}.</h3>
-        <p>{c.sub.next} We’ll text you the morning they open, and the chocolate shelf is full until then.</p>
+        <p className="eyebrow eyebrow-on-dark">Coming soon</p>
+        <h3>{c.teaser.title}</h3>
+        <p>{c.teaser.body}</p>
         <NotifyForm opensOn={opens} what={c.title} dark />
       </div>
       <div className="next-count">
@@ -64,16 +63,19 @@ function NextPanel() {
 }
 
 export function Shop() {
-  const { shop, s, tab, setTab } = useStore();
+  const { shop, s, tab: chosenTab, setTab } = useStore();
   const premium = shop.collections.find((c): c is CoreCollection => c.kind === 'core')!;
   const tabs = useRef<Record<Tab, HTMLButtonElement | null>>({ premium: null, seasonal: null });
 
+  // Chocolate-only: no switch, just the shelf
+  const showSwitch = s.mode !== 'none';
+  const tab: Tab = showSwitch ? chosenTab : 'premium';
   const seasonalSub = s.primary
     ? `${s.primary.title} · live`
-    : s.next
-      ? `Next: ${s.next.collection.short}, ${formatMonthDay(s.next.collection.from, true)}`
-      : 'Nothing scheduled';
-  const title = tab === 'premium' ? premium.shopTitle : s.primary ? s.primary.shopTitle : 'Between seasons.';
+    : s.announced
+      ? `${s.announced.collection.short} · opens ${formatMonthDay(s.announced.collection.from, true)}`
+      : '';
+  const title = tab === 'premium' ? premium.shopTitle : s.primary ? s.primary.shopTitle : 'Coming soon.';
 
   const onKey = (e: KeyboardEvent) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
@@ -109,7 +111,7 @@ export function Shop() {
     }
     panel = <ShopPanel key={`seasonal-${liveIds.join('+')}-${s.day}`} items={items} chips={chips} match={match} />;
   } else {
-    panel = <NextPanel />;
+    panel = <SoonPanel />;
   }
 
   return (
@@ -119,31 +121,33 @@ export function Shop() {
           <p className="eyebrow">The shop</p>
           <h2 className="section-title" id="shop-title">{title}</h2>
         </div>
-        <div className="switch" role="tablist" aria-label="Collections" onKeyDown={onKey}>
-          <button
-            ref={(el) => { tabs.current.premium = el; }}
-            className="switch-btn" role="tab" id="tab-premium" type="button"
-            aria-selected={tab === 'premium'} aria-controls="shop-panel" tabIndex={tab === 'premium' ? 0 : -1}
-            onClick={() => setTab('premium')}
-          >
-            <span className="switch-title">Premium</span>
-            <span className="switch-sub">{premium.tabSub}</span>
-          </button>
-          <button
-            ref={(el) => { tabs.current.seasonal = el; }}
-            className="switch-btn switch-btn-season" role="tab" id="tab-seasonal" type="button"
-            aria-selected={tab === 'seasonal'} aria-controls="shop-panel" tabIndex={tab === 'seasonal' ? 0 : -1}
-            onClick={() => setTab('seasonal')}
-          >
-            <span className="switch-title">
-              <span className="live-dot" aria-hidden="true" />
-              Seasonal
-            </span>
-            <span className="switch-sub">{seasonalSub}</span>
-          </button>
-        </div>
+        {showSwitch && (
+          <div className="switch" role="tablist" aria-label="Collections" onKeyDown={onKey}>
+            <button
+              ref={(el) => { tabs.current.premium = el; }}
+              className="switch-btn" role="tab" id="tab-premium" type="button"
+              aria-selected={tab === 'premium'} aria-controls="shop-panel" tabIndex={tab === 'premium' ? 0 : -1}
+              onClick={() => setTab('premium')}
+            >
+              <span className="switch-title">Premium</span>
+              <span className="switch-sub">{premium.tabSub}</span>
+            </button>
+            <button
+              ref={(el) => { tabs.current.seasonal = el; }}
+              className="switch-btn switch-btn-season" role="tab" id="tab-seasonal" type="button"
+              aria-selected={tab === 'seasonal'} aria-controls="shop-panel" tabIndex={tab === 'seasonal' ? 0 : -1}
+              onClick={() => setTab('seasonal')}
+            >
+              <span className="switch-title">
+                <span className="live-dot" aria-hidden="true" />
+                Seasonal
+              </span>
+              <span className="switch-sub">{seasonalSub}</span>
+            </button>
+          </div>
+        )}
       </div>
-      <div className="shop-panel" id="shop-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
+      <div className="shop-panel" id="shop-panel" {...(showSwitch ? { role: 'tabpanel', 'aria-labelledby': `tab-${tab}` } : {})}>
         {panel}
       </div>
     </section>

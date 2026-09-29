@@ -6,14 +6,22 @@ import type { ShopData } from './types';
  */
 export const shopData: ShopData = {
   brand: {
-    name: 'ritu',
-    nameBn: 'ঋতু',
+    name: 'moyra',
+    nameBn: 'ময়রা',
+    mark: 'ম',
     tagline: 'Chocolate, always. The rest, in season.',
     currency: '৳',
     phone: '+880 1700-000000',
     city: 'Dhaka, Bangladesh',
     links: { facebook: '#', instagram: '#', whatsapp: '#' },
   },
+
+  settings: {
+    seasonalEnabled: true,
+  },
+
+  // Used whenever no seasonal collection is live: the site is just chocolate.
+  brandTheme: { accent: '#C9DC92', deep: '#46601E', soft: '#EFE5D8', glow: '#E7A661' },
 
   delivery: {
     freeOver: 2000, // inside Dhaka
@@ -59,11 +67,11 @@ export const shopData: ShopData = {
       shopTitle: 'On the shelf, all year.',
     },
     {
-      id: 'mango', kind: 'seasonal', status: 'auto', from: '05-20', to: '08-20', theme: 'grishma',
+      id: 'mango', kind: 'seasonal', status: 'auto', from: '05-20', to: '08-20', announceDays: 30, theme: 'grishma',
       title: 'Mango season', short: 'Mangoes', bn: 'মধুমাস',
       shopTitle: 'Mangoes, while they last.',
-      hero: { now: 'Mangoes, right now.', next: 'Mangoes, from May.' },
-      sub: { now: 'This season: tree-ripened mangoes from Rajshahi.', next: 'Next season: Rajshahi mangoes, from late May.' },
+      soonAnnounce: 'Mango season opens on 20 May. Get a text the morning it starts.',
+      sub: { now: 'This season: tree-ripened mangoes from Rajshahi.', next: 'Rajshahi mangoes arrive on 20 May.' },
       cta: { now: 'Mangoes are in', next: 'Mangoes · from 20 May' },
       poster: {
         layout: 'harvest',
@@ -72,15 +80,18 @@ export const shopData: ShopData = {
         body: 'We buy straight from orchards in Rajshahi and Chapainawabganj and pick each variety when it’s ready, never early. No carbide, no formalin. Crates are ventilated, so nothing sweats on the way.',
         cta: 'Shop all mangoes',
       },
-      closedNote: 'Mango season wrapped up on 20 August.',
+      teaser: {
+        title: 'Mango season opens on 20 May.',
+        body: 'Gopalbhog first, then Himsagar and Langra, straight from orchards in Rajshahi. Leave your number and we’ll text you the morning it opens.',
+      },
     },
     {
-      id: 'gifts', kind: 'seasonal', status: 'auto', from: '02-01', to: '02-14', theme: 'boshonto',
+      id: 'gifts', kind: 'seasonal', status: 'auto', from: '02-01', to: '02-14', announceDays: 21, theme: 'boshonto',
       title: 'Gift boxes', short: 'Gift boxes', bn: '১৪', countdownTo: '02-14',
       announce: 'Order gift boxes by 12 February for delivery on the 14th, anywhere inside Dhaka.',
+      soonAnnounce: 'Gift boxes for Falgun and Valentine’s open on 1 February.',
       shopTitle: 'Gift boxes for the 14th.',
-      hero: { now: 'Gift boxes, right now.', next: 'Gift boxes, from 1 Feb.' },
-      sub: { now: 'This season: gift boxes for Falgun and Valentine’s.', next: 'Next season: gift boxes, opening 1 February.' },
+      sub: { now: 'This season: gift boxes for Falgun and Valentine’s.', next: 'Gift boxes for the 14th open on 1 February.' },
       cta: { now: 'Gift boxes are in', next: 'Gift boxes · from 1 Feb' },
       poster: {
         layout: 'countdown',
@@ -89,7 +100,10 @@ export const shopData: ShopData = {
         body: 'Hand-packed boxes of the good stuff, with a note in your words written on a card. Order by 12 February and we’ll deliver on the 14th, anywhere inside Dhaka.',
         cta: 'Shop gift boxes',
       },
-      closedNote: 'Gift boxes ran until 14 February.',
+      teaser: {
+        title: 'Gift boxes open on 1 February.',
+        body: 'Hand-packed boxes for Falgun and Valentine’s, with a note in your words. Leave your number and we’ll text you the morning they open.',
+      },
     },
   ],
 
@@ -178,7 +192,7 @@ export const shopData: ShopData = {
   faq: [
     { q: 'How much is delivery?', a: '৳70 inside Dhaka and ৳130 everywhere else. Orders over ৳2,000 ship free inside Dhaka.' },
     { q: 'Will my chocolate arrive melted?', a: 'No. From March to October every order goes in an insulated box with ice packs, and our riders drop chocolate orders first.' },
-    { q: 'How does mango pre-booking work?', a: 'Choose a variety that isn’t ripe yet and book a crate. We ship the week it’s harvested, and you pay on delivery.' },
+    { q: 'How does mango pre-booking work?', a: 'Choose a variety that isn’t ripe yet and book a crate. We ship the week it’s harvested, and you pay on delivery.', seasonal: true },
     { q: 'Can I send a gift straight to someone?', a: 'Yes. Enter their address at checkout and add a note. We’ll write it on a card and leave the price out of the box.' },
     { q: 'Are these the real thing?', a: 'Every bar comes from authorised importers, and the best-before date on each listing is the one printed on the pack we’ll send you.' },
   ],

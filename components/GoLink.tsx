@@ -22,3 +22,9 @@ export function OpenCartButton({ children }: { children: ReactNode }) {
     </button>
   );
 }
+
+/** Shows its children only while something seasonal is on; `otherwise` for the chocolate-only site. */
+export function IfSeasonal({ children, otherwise = null }: { children: ReactNode; otherwise?: ReactNode }) {
+  const { s } = useStore();
+  return <>{s.mode === 'none' ? otherwise : children}</>;
+}

@@ -9,9 +9,9 @@ const body = Anek_Bangla({ subsets: ['latin', 'bengali'], axes: ['wdth'], variab
 const inkjet = Doto({ weight: '800', subsets: ['latin'], variable: '--font-doto', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'ritu · Chocolate, always. The rest, in season.',
+  title: 'moyra · Chocolate, always.',
   description:
-    'Imported chocolate all year, stored cool and delivered cool across Bangladesh, plus the best of each Bengali season: Rajshahi mangoes in summer and gift boxes for Falgun and Valentine’s.',
+    'Imported chocolate from the brands you love, stored cool and delivered cool anywhere in Bangladesh. In season: Rajshahi mangoes in summer and gift boxes for Falgun and Valentine’s.',
 };
 
 export const viewport: Viewport = {

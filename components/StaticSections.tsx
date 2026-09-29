@@ -1,6 +1,6 @@
 import type { Brand, FaqItem } from '@/lib/types';
-import { Icon } from './Icons';
-import { GoLink, OpenCartButton } from './GoLink';
+import { LogoMark } from './Icons';
+import { GoLink, IfSeasonal, OpenCartButton } from './GoLink';
 
 /* Server components: no client JavaScript beyond the small links inside. */
 
@@ -31,10 +31,19 @@ export function DeliveryPromise() {
             <p>Every listing shows the date printed on the stock we have now.</p>
             <p className="inkjet" aria-label="Example: best before September 2027">BEST BEFORE 09 2027 · LOT 26C14</p>
           </li>
-          <li className="fact">
-            <h3>Tree-ripened mangoes</h3>
-            <p>Picked when ready in Rajshahi and Chapainawabganj. No carbide, no formalin, ever.</p>
-          </li>
+          <IfSeasonal
+            otherwise={
+              <li className="fact">
+                <h3>Ready to give</h3>
+                <p>Add a note at checkout and we’ll write it on a card, wrap the order and leave the price out.</p>
+              </li>
+            }
+          >
+            <li className="fact">
+              <h3>Tree-ripened mangoes</h3>
+              <p>Picked when ready in Rajshahi and Chapainawabganj. No carbide, no formalin, ever.</p>
+            </li>
+          </IfSeasonal>
           <li className="fact">
             <h3>Pay how you like</h3>
             <p>Cash on delivery, bKash, Nagad or card. Choose cash and you pay nothing until it’s at your door.</p>
@@ -59,12 +68,15 @@ export function Faq({ items }: { items: FaqItem[] }) {
           <p className="faq-contact">Anything else? Message us on WhatsApp and a real person replies, usually within the hour.</p>
         </div>
         <div className="faq-list">
-          {items.map((f) => (
-            <details className="faq-item" key={f.q}>
-              <summary>{f.q}</summary>
-              <p>{f.a}</p>
-            </details>
-          ))}
+          {items.map((f) => {
+            const item = (
+              <details className="faq-item" key={f.q}>
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            );
+            return f.seasonal ? <IfSeasonal key={f.q}>{item}</IfSeasonal> : item;
+          })}
         </div>
       </div>
     </section>
@@ -77,17 +89,19 @@ export function Footer({ brand }: { brand: Brand }) {
       <div className="footer-inner">
         <div className="footer-brand">
           <a className="logo logo-footer" href="#top" aria-label={`${brand.name}, back to top`}>
-            <Icon name="rosette" className="logo-mark" />
+            <LogoMark mark={brand.mark} />
             <span className="logo-word">{brand.name}</span>
           </a>
-          <p>Chocolate, always.<br />The rest, in season.</p>
-          <p className="footer-bn" lang="bn">ছয় ঋতুর চকলেট</p>
+          <p>{brand.tagline}</p>
+          <p className="footer-bn" lang="bn">চকলেটের {brand.nameBn}</p>
         </div>
         <nav className="footer-col" aria-label="Shop">
           <h3>Shop</h3>
           <GoLink to="premium">Premium chocolate</GoLink>
-          <GoLink to="seasonal">Seasonal</GoLink>
-          <a href="#year">The year at {brand.name}</a>
+          <IfSeasonal>
+            <GoLink to="seasonal">Seasonal</GoLink>
+            <a href="#year">The year at {brand.name}</a>
+          </IfSeasonal>
         </nav>
         <nav className="footer-col" aria-label="Help">
           <h3>Help</h3>

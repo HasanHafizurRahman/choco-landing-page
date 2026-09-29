@@ -1,4 +1,4 @@
-export type IconName = 'rosette' | 'bag' | 'close' | 'menu' | 'arrow' | 'bell' | 'check';
+export type IconName = 'bag' | 'close' | 'menu' | 'arrow' | 'bell' | 'check';
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
   return (
@@ -8,23 +8,22 @@ export function Icon({ name, className }: { name: IconName; className?: string }
   );
 }
 
-/** Inline sprite, rendered once. The rosette's six petals are the six seasons. */
+/** The mark: the letter ম stamped into a square of chocolate, like the logo molded on a bar. */
+export function LogoMark({ mark, className = '' }: { mark: string; className?: string }) {
+  return (
+    <svg className={`logo-mark ${className}`} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+      <rect className="logo-mark-piece" x="1" y="1" width="38" height="38" rx="10" />
+      <rect className="logo-mark-bevel" x="5.5" y="5.5" width="29" height="29" rx="6.5" />
+      <text className="logo-mark-glyph" x="20" y="22.5" textAnchor="middle" dominantBaseline="central">{mark}</text>
+    </svg>
+  );
+}
+
+/** Inline sprite, rendered once. */
 export function IconSprite() {
   return (
     <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true" focusable="false">
       <defs>
-        <mask id="rosette-hole">
-          <rect x="-20" y="-20" width="40" height="40" fill="#fff" />
-          <circle r="2.6" fill="#000" />
-        </mask>
-        <path id="rosette-petal" d="M0-2.2C5-6.4 5.6-13.6 0-18.6-5.6-13.6-5-6.4 0-2.2Z" />
-        <symbol id="i-rosette" viewBox="-20 -20 40 40">
-          <g mask="url(#rosette-hole)" fill="currentColor">
-            {[0, 60, 120, 180, 240, 300].map((deg) => (
-              <use key={deg} href="#rosette-petal" transform={`rotate(${deg})`} />
-            ))}
-          </g>
-        </symbol>
         <symbol id="i-bag" viewBox="0 0 24 24">
           <path d="M6 8h12l-1 12H7L6 8Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
           <path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="currentColor" strokeWidth="1.8" />

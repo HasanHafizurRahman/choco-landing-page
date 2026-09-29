@@ -5,7 +5,7 @@ import { availability, formatMonthDay } from '@/lib/season';
 import { money, plural } from '@/lib/format';
 import { useStore } from './store';
 import { useCart } from './cart';
-import { Icon } from './Icons';
+import { Icon, LogoMark } from './Icons';
 import { ProductImage } from './ProductCard';
 import { isBdMobile } from './NotifyForm';
 
@@ -79,7 +79,7 @@ export function CartDrawer() {
       <div className="drawer-body">
         {view === 'done' && order && (
           <div className="done">
-            <Icon name="rosette" className="done-mark" />
+            <LogoMark mark={shop.brand.mark} className="done-mark" />
             <h3>Order placed, {order.name}.</h3>
             <p className="done-id">#{order.id}</p>
             <p>We’ll call to confirm within the hour. Delivery {order.eta}. Total {money(order.total, cur)}.</p>
@@ -90,7 +90,7 @@ export function CartDrawer() {
 
         {view !== 'done' && cart.count === 0 && (
           <div className="cart-empty">
-            <Icon name="rosette" />
+            <LogoMark mark={shop.brand.mark} className="empty-mark" />
             <p>Your cart is empty. The shelf isn’t.</p>
             <button type="button" className="btn btn-choc" onClick={() => { cart.setOpen(false); go('premium'); }}>Shop chocolate</button>
           </div>
